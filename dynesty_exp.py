@@ -95,6 +95,10 @@ from scipy.special import lambertw
 from scipy.optimize import root_scalar
 
 def Friedmann(E, Omega_bc, Omega_gamma, Omega_nu, Omega_nu_ur, a_nr_sq, z):
+    # NOTE (paper-vs-code): the Exp model uses a closure relation for lambda derived from
+    # E(z=0)=1, i.e. from \tilde{E}^2_{Lambda=0}(0). Make sure the terms included in this lambda
+    # computation are consistent with the RHS used below (which includes the neutrino transition
+    # term proportional to Omega_nu_ur and a_nr_sq). Otherwise E(0) may not be exactly 1.
     lambda_ = 0.5 + lambertw(-(Omega_bc + Omega_gamma + Omega_nu)/(2*np.sqrt(np.e))).real
     return (E**2 - 2*lambda_) * np.exp(lambda_/E**2) - Omega_bc * (1 + z)**3 - Omega_gamma * (1 + z)**4 - Omega_nu_ur * np.sqrt(1 + 1/((1 + z)**2 * a_nr_sq)) * (1 + z)**4
 

@@ -89,6 +89,11 @@ from scipy.special import lambertw
 from scipy.optimize import root_scalar
 
 def reduced_hubble_factor(z, Omega_bc, Omega_gamma, Omega_nu, Omega_nu_ur, a_nr_sq):
+    # NOTE (paper-vs-code): be careful with closure here.
+    # Omega_Lambda is defined using (Omega_bc, Omega_gamma, Omega_nu), but E(z)^2 below also includes
+    # an additional neutrino transition term parameterized by Omega_nu_ur and a_nr_sq.
+    # If Omega_nu_ur is not included consistently in the z=0 closure relation, then E(0) may deviate
+    # from 1. This can propagate into distances (D_M) and the compressed CMB likelihood.
     Omega_Lambda = 1 - Omega_bc - Omega_gamma - Omega_nu
     E = np.sqrt(Omega_bc * (1 + z)**3 + Omega_gamma*(1+z)**4 + Omega_Lambda + Omega_nu_ur * np.sqrt(1+1/((1+z)**2*a_nr_sq)) * (1+z)**4 )
     return E
@@ -279,6 +284,10 @@ def chi_squared(theta, print_output=False):
     chi2_maser = ((H0 - H0_maser) / eH0_maser)**2
 
     # Cosmic Chronometers (CC) data
+    # NOTE (diagnostics): this CC prediction uses a simplified E(z)=sqrt(Om(1+z)^3+1-Om).
+    # In log_likelihood() we instead use reduced_hubble_factor(), which includes radiation and the
+    # neutrino transition term. Therefore, the chi2_CC contribution printed here may not match the
+    # CC contribution in the actual likelihood being sampled.
     H_z_CC_predicted = H0 * np.sqrt(omega_m * (1 + z_CC)**3 + (1 - omega_m))
 
     chi2_CC = np.sum(((H_z_CC_predicted - H_z_CC)/sigma_H_z_CC)**2)

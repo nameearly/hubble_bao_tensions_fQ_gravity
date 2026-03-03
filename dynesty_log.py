@@ -99,6 +99,10 @@ z_CC, H_z_CC, sigma_H_z_CC = np.loadtxt('CC_data.txt', unpack=True)
 from scipy.optimize import root_scalar
 
 def Friedmann(E, Omega_bc, Omega_gamma, Omega_nu, Omega_nu_ur, a_nr_sq, z):
+    # NOTE (paper-vs-code): Omega_alpha is defined from a z=0 closure relation. Ensure that the
+    # set of density terms used here is consistent with the full RHS below, which includes the
+    # neutrino transition term proportional to Omega_nu_ur and a_nr_sq. If not, E(0) may deviate
+    # from 1, impacting distances and the compressed CMB likelihood.
     Omega_alpha = 1 - Omega_bc - Omega_gamma - Omega_nu
     return E**2 + Omega_alpha * np.log(E) - Omega_alpha - Omega_bc * (1 + z)**3 - Omega_gamma * (1 + z)**4 - Omega_nu_ur * np.sqrt(1 + 1/((1 + z)**2 * a_nr_sq)) * (1 + z)**4
 

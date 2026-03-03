@@ -118,13 +118,25 @@ z_CC, H_z_CC, sigma_H_z_CC = np.loadtxt('CC_data.txt', unpack=True)
 #from scipy.optimize import root_scalar
 
 def Hubble_factor(z, Omega_bc, Omega_gamma, Omega_nu, Omega_nu_ur, a_nr_sq, H0, A, z_1, function_type=phenomenological_function):
+    # NOTE (paper-vs-code): be careful with closure here.
+    # Omega_Lambda is defined using (Omega_bc, Omega_gamma, Omega_nu), but the sqrt(...) term below
+    # also includes a neutrino transition contribution parameterized by Omega_nu_ur and a_nr_sq.
+    # If Omega_nu_ur is not accounted for consistently in the z=0 closure relation, then H(z=0)
+    # may not correspond exactly to the intended H0 parameter.
     Omega_Lambda = 1 - Omega_bc - Omega_gamma - Omega_nu
+
     if function_type == "exp":
+        # NOTE (paper convention): the phenomenological model is often described as H(z)=H_LCDM(z)+DeltaH(z),
+        # with the predicted local Hubble constant being H0_local = H0_LCDM + A. Here H0 multiplies the
+        # sqrt(LCDM-like) piece, while A controls an additive DeltaH(z) term.
         H = H0 * np.sqrt(Omega_bc * (1 + z)**3 + Omega_gamma*(1+z)**4 + Omega_Lambda + Omega_nu_ur * np.sqrt(1+1/((1+z)**2*a_nr_sq)) * (1+z)**4 ) + A * np.exp(- z/z_1) #exp
+
     if function_type == "sech":
         u = np.exp(-z/z_1); H = H0 * np.sqrt(Omega_bc * (1 + z)**3 + Omega_gamma*(1+z)**4 + Omega_Lambda + Omega_nu_ur * np.sqrt(1+1/((1+z)**2*a_nr_sq)) * (1+z)**4 ) + 2.0 * A * u / (1 + u*u) #sech
+
     if function_type == "tanh":
         H = H0 * np.sqrt(Omega_bc * (1 + z)**3 + Omega_gamma*(1+z)**4 + Omega_Lambda + Omega_nu_ur * np.sqrt(1+1/((1+z)**2*a_nr_sq)) * (1+z)**4 ) + A * tanh_z1_by_z_vec(z, z_1) #tanh
+
     if function_type == "polynomial":
         H = H0 * np.sqrt(Omega_bc * (1 + z)**3 + Omega_gamma*(1+z)**4 + Omega_Lambda + Omega_nu_ur * np.sqrt(1+1/((1+z)**2*a_nr_sq)) * (1+z)**4 ) + A / (1 + z/z_1) #polynomial decay
     return H

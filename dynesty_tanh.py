@@ -101,6 +101,10 @@ rescaling = 0.5 * np.tanh(1.0) + 1./(np.cosh(1.0))**2  # Rescaling factor for th
 from scipy.optimize import root_scalar
 
 def Friedmann(E, Omega_bc, Omega_gamma, Omega_nu, Omega_nu_ur, a_nr_sq, z):
+    # NOTE (paper-vs-code): Omega_alpha is set from a z=0 closure relation (with the rescaling
+    # chosen so that E(0)=1 for the tanh modification). Ensure the set of terms entering the
+    # closure is consistent with the RHS here, which includes the neutrino transition term
+    # proportional to Omega_nu_ur and a_nr_sq. Otherwise E(0) may deviate from 1.
     Omega_alpha = (1 - Omega_bc - Omega_gamma - Omega_nu)/rescaling
     inverse_E2 = 1 / E**2
     return E**2 - Omega_alpha/(np.cosh(inverse_E2))**2 * inverse_E2 - 0.5 * Omega_alpha * np.tanh(inverse_E2) - Omega_bc * (1 + z)**3 - Omega_gamma * (1 + z)**4 - Omega_nu_ur * np.sqrt(1 + 1/((1 + z)**2 * a_nr_sq)) * (1 + z)**4
